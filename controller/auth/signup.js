@@ -9,13 +9,24 @@ const signup = asyncWrapper(async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-    const otp = generateOtp();
-    const hashedOtp = await bcrypt.hash(otp, salt);
-
+    
     try {
+        // Validate input
+        if (!req.body.email || !req.body.phone || !req.body.password) {
+            return res.status(400).json({ type: "error", message: "Email, phone number, and password are required." });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(req.body.email)) {
+            return res.status(400).json({ type: "error", message: "Valid email is required." });
+        }
+
+        const otp = generateOtp();
+        const hashedOtp = await bcrypt.hash(otp, salt);
         let user = new TempUser({
             email: req.body.email,
-            phoneNumber: req.body.phoneNumber,
+            phoneNumber: req.body.phone,
             password: hashedPassword,
             hashedOtp: hashedOtp,
             otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000) // OTP expires in 10 minutes,
