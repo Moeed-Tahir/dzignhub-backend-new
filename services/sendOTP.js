@@ -1,6 +1,6 @@
 // Send OTP email
 const nodemailer = require('nodemailer');
-const sendOtp = async (recipientEmail, otp) => {
+const sendOtp = async (recipientEmail, otp, isResetPassword = false) => {
     try {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -11,11 +11,11 @@ const sendOtp = async (recipientEmail, otp) => {
       });
   
       const mailOptions = {
-        from: 'DzignHub - Verify your mail',
+        from: `DzignHub - ${isResetPassword ? 'Reset Password' : 'Verify your mail'} <${process.env.GMAIL_USER}>`,
         to: recipientEmail,
         subject: 'Your OTP Code',
         html: `
-          <h3>Your OTP is:</h3>
+          <h3>Your OTP ${isResetPassword ? 'for password reset' : ''} is:</h3>
           <p style="font-size: 20px; font-weight: bold;">${otp}</p>
           <p>This OTP will expire in 10 minutes.</p>
         `,

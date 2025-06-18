@@ -13,13 +13,24 @@ const users = new Schema({
     type: String,
     required: true
   },
-  isVerified: {
-    type: Boolean
-  },
   password: {
     type: String,
     required: true
-  }
+  },
+  resetOtp: {
+    type: String,
+  },
+  
+  resetOtpExpires: {
+    type: Date,
+  },
+  
+  resetSessionToken: {
+    type: String,
+  },
+  resetSessionExpires: {
+    type: Date,
+  },
 }, { timestamps: true });
 
 
