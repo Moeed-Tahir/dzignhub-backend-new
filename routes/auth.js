@@ -18,6 +18,7 @@ router.route('/confirm-otp').post(confirmOtp);
 router.route('/forgot-password').post(forgotPassword);
 router.route('/verify-reset-otp').post(verifyResetOtp);
 router.route('/reset-password').post(resetPassword);
+router.route('/resend-otp').post(resendOtp);
 router.route('/social-login').post(socialLogin);
 
 module.exports = router;

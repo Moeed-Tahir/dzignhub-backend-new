@@ -19,12 +19,12 @@ const signup = asyncWrapper(async (req, res) => {
         // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(req.body.email)) {
-            return res.status(400).json({ type: "error", message: "Valid email is required." });
+            return res.status(400).json({ type: "error", message: "Valid email is required.", field: "email" });
         }
 
         let user = await User.findOne({ email: req.body.email });
         if (!user) {
-            return res.status(404).json({ type: "error", message: "User not found." });
+            return res.status(404).json({ type: "error", message: "User not found with this email.", field: "email" });
         }
 
 
@@ -40,12 +40,12 @@ const signup = asyncWrapper(async (req, res) => {
         // Send OTP email - if this fails, we should handle it properly
         try {
             await sendOtp(req.body.email, otp, true);
-            return res.status(200).json({ type: "success", message: "OTP has been sent to your email." });
+            return res.status(200).json({ type: "success", message: "OTP has been sent to your email.", field: "email" });
         } catch (emailError) {
             console.error("Error sending OTP email:", emailError);
             // Delete the user since OTP couldn't be sent
             await TempUser.findByIdAndDelete(user._id);
-            return res.status(500).json({ type: "error", message: "Failed to send OTP email. Please try again." });
+            return res.status(500).json({ type: "error", message: "Failed to send OTP email. Please try again.", field: "email" });
         }
         
     } 

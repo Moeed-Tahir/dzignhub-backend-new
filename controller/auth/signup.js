@@ -2,6 +2,7 @@
 const bcrypt = require("bcryptjs");
 const asyncWrapper = require("../../middleware/async");
 const TempUser = require("../../models/TempUser");
+const User = require("../../models/User");
 const { generateOtp } = require("../../services/generateOTP");
 const { sendOtp } = require("../../services/sendOTP");
 
@@ -22,8 +23,18 @@ const signup = asyncWrapper(async (req, res) => {
             return res.status(400).json({ type: "error", message: "Valid email is required." });
         }
 
+        let previousUser = await User.findOne({ email: req.body.email });
+        if (previousUser) {
+            return res.status(400).json({ type: "error", message: "Account with this email already exists.", field: "email"});
+        }
+
         const otp = generateOtp();
         const hashedOtp = await bcrypt.hash(otp, salt);
+        let prev = await TempUser.findOne({email: req.body.mail});
+        if (prev) {
+            //deleting previous created user
+            await TempUser.findByIdAndDelete(prev._id);
+            }
         let user = new TempUser({
             email: req.body.email,
             phoneNumber: req.body.phone,
@@ -42,7 +53,7 @@ const signup = asyncWrapper(async (req, res) => {
             console.error("Error sending OTP email:", emailError);
             // Delete the user since OTP couldn't be sent
             await TempUser.findByIdAndDelete(user._id);
-            return res.status(500).json({ type: "error", message: "Failed to send OTP email. Please try again." });
+            return res.status(500).json({ type: "error", message: "Failed to send OTP email. Please try again.", field: "email"});
         }
         
     } 

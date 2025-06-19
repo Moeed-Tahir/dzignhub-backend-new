@@ -24,13 +24,20 @@ const signup = asyncWrapper(async (req, res) => {
         const otp = generateOtp();
         const hashedOtp = await bcrypt.hash(otp, salt);
 
-        let user = await User.findOne({
-            email: req.body.email
-        });
-        if (!user) {
-            return res.status(400).json({ type: "error", message: "User with this email does not exist." });
-        }
 
+        let user;
+        if (req.body.isPasswordReset) {
+            user = await User.findOne({
+                email: req.body.email
+            });
+            if (!user) {
+                return res.status(400).json({ type: "error", message: "User with this email does not exist." });
+            }    
+        }
+        else {
+            user = await TempUser.findOne({ email: req.body.email });
+        }
+       
         user.hashedOtp = hashedOtp;
         user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
         await user.save();

@@ -17,7 +17,7 @@ const verifyResetOtp = asyncWrapper(async (req, res) => {
         }
 
         if (user.resetSessionExpires < new Date()) {
-            return res.status(400).json({ type: "error", message: "Token has expired." });
+            return res.status(400).json({ type: "error", message: "Token has expired. Please request a new one." });
         }
 
        const isTokenValid = user.resetSessionToken === resetToken;
