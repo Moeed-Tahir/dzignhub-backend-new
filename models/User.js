@@ -10,12 +10,10 @@ const users = new Schema({
         match: [/.+\@.+\..+/, 'Please enter a valid email address']
    },
   phoneNumber: {
-    type: String,
-    required: true
+    type: String
   },
   password: {
-    type: String,
-    required: true
+    type: String
   },
   resetOtp: {
     type: String,
@@ -31,6 +29,7 @@ const users = new Schema({
   resetSessionExpires: {
     type: Date,
   },
+  provider: {type: String},
 }, { timestamps: true });
 
 
