@@ -34,6 +34,9 @@ const confirmOtp = asyncWrapper(async (req, res) => {
         });
         await newUser.save();
 
+        var token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET_KEY, { expiresIn:  '1d' });
+        
+
         // Delete the temporary user after successful verification
         await TempUser.findByIdAndDelete(user._id);
 

@@ -10,7 +10,7 @@ const login = asyncWrapper(async (req, res) => {
             return res.status(200).json({ type: "error", message: "You are not logged in" })
         }
         
-        const verification = jwt.verify(req.body.token, process.env.JWT_SECRET);
+        const verification = jwt.verify(req.body.token, process.env.JWT_SECRET_KEY);
         if (!verification) {
             return res.status(200).json({ type: "error", message: "Invalid Token" })
         }
