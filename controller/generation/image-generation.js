@@ -1,4 +1,3 @@
-
 const Replicate = require("replicate");
 const tus = require('tus-js-client');
 const { createClient } = require('@supabase/supabase-js');
@@ -19,12 +18,12 @@ const supabase = createClient(
 );
 
 const styleMap = {
-    cartoon: "in cartoon style",
-    "3d": "3D render",
-    anime: "anime illustration",
-    pencil: "pencil sketch",
-    illustration: "digital illustration",
-    fantasy: "fantasy concept art"
+    Cartoon: "in cartoon style",
+    "3D": "3D render",
+    Anime: "anime illustration",
+    Pencil: "pencil sketch",
+    Illustration: "digital illustration",
+    Fantasy: "fantasy concept art"
 };
 
 const aspectRatioMap = {
@@ -83,25 +82,24 @@ const uploadFile = async (bucketName, fileName, imageBuffer) => {
 
 const imageGeneration = async (req, res) => {
     try {
-
-        const { prompt, style, size, colors } = req.body;
+        const { prompt, style, size, colors, quantity = 1 } = req.body;
 
         if (!prompt || !style || !size || !Array.isArray(colors) || colors.length !== 3) {
             return res.status(400).json({ error: "Invalid input data" });
         }
 
-        // Convert hex to color names
+        const imageCount = Math.min(Math.max(parseInt(quantity), 1), 4);
+
+        // Build final prompt (same as before)
         const colorNames = colors.map(hex => {
             const result = namer(hex);
-            return result.basic[0].name; // Get the closest basic color name
+            return result.basic[0].name;
         });
 
-        // Build final prompt
-        const styleText = styleMap[style] || "";
+        const styleText = styleMap[style.name] || "";
         const colorText = `with colors like ${colorNames.join(", ")}`;
         const fullPrompt = `${prompt}, ${styleText}, ${colorText}`;
 
-        // Construct input for Flux model
         const input = {
             prompt: fullPrompt,
             aspect_ratio: aspectRatioMap[size] || "1:1",
@@ -111,36 +109,97 @@ const imageGeneration = async (req, res) => {
             output_quality: 80
         };
 
-        const outputStream = await replicate.run("black-forest-labs/flux-1.1-pro", { input });
-
-        console.log("Received ReadableStream from Replicate");
-
-        // Convert stream to buffer using your existing function
-        console.log("Converting stream to buffer...");
-        const imageBuffer = await streamToBuffer(outputStream);
-        console.log("Image buffer created, size:", imageBuffer.length, "bytes");
-
-        // Generate unique filename
-        const fileName = `generated-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
-
-
-        // Upload to Supabase
-        const bucketName = 'allmyai-content';
-        console.log("Starting upload to Supabase...");
-
-        const uploadUrl = await uploadFile(bucketName, fileName, imageBuffer);
-
-        console.log("Upload completed successfully!");
-
-        res.status(200).json({
-            message: "File uploaded successfully to Supabase",
-            fileName: fileName,
-            uploadUrl: uploadUrl,
-            fileSize: imageBuffer.length
+        console.log(`Generating ${imageCount} images in parallel...`);
+        
+        // Create array of generation promises
+        const generationPromises = Array.from({ length: imageCount }, (_, i) => 
+            generateAndUploadImage(input, i + 1)
+        );
+        
+        // Wait for all promises to settle (success or failure)
+        const results = await Promise.allSettled(generationPromises);
+        
+        // Separate successful and failed results
+        const successfulImages = [];
+        const failedImages = [];
+        
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                successfulImages.push(result.value);
+            } else {
+                failedImages.push({
+                    index: index + 1,
+                    error: result.reason.message || 'Unknown error'
+                });
+                console.error(`Image ${index + 1} failed:`, result.reason);
+            }
         });
+
+        // Determine response based on results
+        if (successfulImages.length === 0) {
+            return res.status(500).json({
+                type: "error",
+                message: "All images failed to generate",
+                failedCount: failedImages.length,
+                errors: failedImages
+            });
+        }
+
+        const response = {
+            type: successfulImages.length === imageCount ? "success" : "partial_success",
+            message: `${successfulImages.length}/${imageCount} images generated successfully`,
+            requestedQuantity: imageCount,
+            successfulCount: successfulImages.length,
+            failedCount: failedImages.length,
+            images: successfulImages,
+            totalSize: successfulImages.reduce((sum, img) => sum + img.fileSize, 0)
+        };
+
+        // Include error details if some failed
+        if (failedImages.length > 0) {
+            response.errors = failedImages;
+            response.message += `. ${failedImages.length} images failed to generate.`;
+        }
+
+        res.status(200).json(response);
     } catch (error) {
-        console.error("Error uploading file:", error);
-        res.status(500).json({ error: "Failed to upload file", details: error.message });
+        console.error("Error in image generation:", error);
+        res.status(500).json({ 
+            type: "error", 
+            message: "Failed to start image generation", 
+            details: error.message 
+        });
     }
 }
+
+// Enhanced helper function with better error handling
+const generateAndUploadImage = async (input, index) => {
+    try {
+        console.log(`Starting generation for image ${index}...`);
+        
+        const outputStream = await replicate.run("black-forest-labs/flux-1.1-pro", { input });
+        
+        const imageBuffer = await streamToBuffer(outputStream);
+        console.log(`Image ${index} buffer created, size:`, imageBuffer.length, "bytes");
+        
+        const fileName = `generated-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}.jpg`;
+        
+        const bucketName = 'allmyai-content';
+        const uploadUrl = await uploadFile(bucketName, fileName, imageBuffer);
+        
+        console.log(`Image ${index} uploaded successfully!`);
+        
+        return {
+            fileName: fileName,
+            imageUrl: uploadUrl,
+            fileSize: imageBuffer.length,
+            index: index,
+            status: 'success'
+        };
+    } catch (error) {
+        console.error(`Error generating image ${index}:`, error);
+        throw new Error(`Image ${index} generation failed: ${error.message}`);
+    }
+};
+
 module.exports = imageGeneration;
