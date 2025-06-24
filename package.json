@@ -13,8 +13,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.50.1",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
+    "color-namer": "^1.4.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
@@ -24,6 +26,7 @@
     "nanoid": "^5.1.5",
     "nodemailer": "^7.0.3",
     "nodemon": "^3.1.4",
-    "replicate": "^1.0.1"
+    "replicate": "^1.0.1",
+    "tus-js-client": "^4.3.1"
   }
 }
