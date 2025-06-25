@@ -2,6 +2,7 @@
 const bcrypt = require("bcryptjs");
 const asyncWrapper = require("../../middleware/async");
 const TempUser = require("../../models/TempUser");
+var jwt = require("jsonwebtoken");
 
 const User = require("../../models/User");
 
@@ -40,7 +41,7 @@ const confirmOtp = asyncWrapper(async (req, res) => {
         // Delete the temporary user after successful verification
         await TempUser.findByIdAndDelete(user._id);
 
-        return res.status(200).json({ type: "success", message: "OTP verified successfully." });
+        return res.status(200).json({ type: "success", message: "OTP verified successfully.", token: token, user: newUser });
     
     } 
     catch(error) {
