@@ -3,6 +3,9 @@ const multer = require('multer');
 const router = express.Router();
 const imageGeneration = require('../controller/generation/image-generation');
 const videoGeneration = require('../controller/generation/video-generation');
+const saveGeneration = require('../controller/generation/save-generation');
+const getGenerations = require('../controller/generation/get-generations');
+const getUserGenerations = require('../controller/generation/get-user-generations');
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -22,6 +25,9 @@ const upload = multer({
 
 // Routes
 router.route('/generate-image').post(imageGeneration);
+router.route('/save-generation').post(saveGeneration);
+router.route('/get-generations').get(getGenerations);
+router.route('/get-user-generations').post(getUserGenerations);
 
 // Add multer middleware to video generation route
 router.route('/generate-video').post(
