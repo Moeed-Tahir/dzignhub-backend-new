@@ -15,6 +15,18 @@ const users = new Schema({
   password: {
     type: String
   },
+  avatar: {
+    type: String,
+  },
+  name: {
+    type: String,
+  },
+  location: {
+    type: String,
+  },
+  bio: {
+    type: String,
+  },
   resetOtp: {
     type: String,
   },
