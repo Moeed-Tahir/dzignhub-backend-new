@@ -7,6 +7,7 @@ const errorHandler = require('./middleware/error-handler');
 const notFound = require('./middleware/not-found');
 const authRoutes = require('./routes/auth');
 const generationRoutes = require('./routes/generation');
+const notificationRoutes = require('./routes/notifications');
 
 require('dotenv').config();
 
@@ -29,6 +30,7 @@ app.use(express.json());
 
 app.use(authRoutes);
 app.use(generationRoutes);
+app.use(notificationRoutes);
 
 app.get('/', (req, res) => {
     console.log("Hello world");

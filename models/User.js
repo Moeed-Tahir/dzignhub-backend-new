@@ -45,10 +45,6 @@ const users = new Schema({
 
 
   notificationSettings: {
-    notifications: {
-      type: Boolean,
-      default: true
-    },
     newNotifications: {
       type: Boolean,
       default: true
