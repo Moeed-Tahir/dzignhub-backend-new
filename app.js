@@ -8,6 +8,8 @@ const notFound = require('./middleware/not-found');
 const authRoutes = require('./routes/auth');
 const generationRoutes = require('./routes/generation');
 const notificationRoutes = require('./routes/notifications');
+const sessionsRoutes = require('./routes/sessions');
+const smartSessionUpdate = require('./middleware/smartSessionUpdate');
 
 require('dotenv').config();
 
@@ -28,9 +30,14 @@ app.use(express.static('./public'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+
+app.use(smartSessionUpdate);
+
+
 app.use(authRoutes);
 app.use(generationRoutes);
 app.use(notificationRoutes);
+app.use(sessionsRoutes);
 
 app.get('/', (req, res) => {
     console.log("Hello world");
