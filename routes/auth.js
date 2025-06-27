@@ -14,6 +14,7 @@ const socialLogin = require('../controller/auth/social-login')
 const changePassword = require('../controller/auth/change-password')
 const editProfile = require('../controller/auth/edit-profile')
 const getProfileData = require('../controller/auth/get-profile-data')
+const deleteAccount = require('../controller/auth/delete-account')
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -48,4 +49,5 @@ router.route('/edit-profile').post(
     ]), 
     editProfile
 );
+router.route('/delete-account').post(deleteAccount);
 module.exports = router;
