@@ -42,6 +42,26 @@ const users = new Schema({
     type: Date,
   },
   provider: {type: String},
+
+
+  notificationSettings: {
+    notifications: {
+      type: Boolean,
+      default: true
+    },
+    newNotifications: {
+      type: Boolean,
+      default: true
+    },
+    softwareUpdatesNewsletter: {
+      type: Boolean,
+      default: true
+    },
+    newMessagesFromBots: {
+      type: Boolean,
+      default: true
+    }
+  }
 }, { timestamps: true });
 
 
