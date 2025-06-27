@@ -9,6 +9,7 @@ const verifyResetOtp = require('../controller/auth/verify-reset-otp')
 const resetPassword = require('../controller/auth/reset-password')
 const resendOtp = require('../controller/auth/resend-otp')
 const socialLogin = require('../controller/auth/social-login')
+const changePassword = require('../controller/auth/change-password')
 
 
 router.route('/login').post(login)
@@ -20,5 +21,6 @@ router.route('/verify-reset-otp').post(verifyResetOtp);
 router.route('/reset-password').post(resetPassword);
 router.route('/resend-otp').post(resendOtp);
 router.route('/social-login').post(socialLogin);
+router.route('/change-password').post(changePassword);
 
 module.exports = router;
