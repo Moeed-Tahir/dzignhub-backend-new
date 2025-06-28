@@ -15,7 +15,7 @@ const changePassword = require('../controller/auth/change-password')
 const editProfile = require('../controller/auth/edit-profile')
 const getProfileData = require('../controller/auth/get-profile-data')
 const deleteAccount = require('../controller/auth/delete-account')
-
+const updateOnboarding = require("../controller/auth/update-onboarding")
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ 
@@ -43,6 +43,8 @@ router.route('/resend-otp').post(resendOtp);
 router.route('/social-login').post(socialLogin);
 router.route('/change-password').post(changePassword);
 router.route('/get-profile-data').get(getProfileData);
+router.post('/update-onboarding', updateOnboarding);
+
 router.route('/edit-profile').post(
     upload.fields([
         { name: 'avatar', maxCount: 1 }
