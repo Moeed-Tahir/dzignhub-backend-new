@@ -57,7 +57,67 @@ const users = new Schema({
       type: Boolean,
       default: true
     }
-  }
+  },
+
+
+  // Onboarding Information
+  onboarding: {
+    isCompleted: {
+      type: Boolean,
+      default: false
+    },
+    currentStep: {
+      type: Number,
+      default: 0
+    },
+    
+    // Let's Start Tab Data
+    userType: [{
+      type: String,
+      enum: [
+        'founder-entrepreneur',
+        'creative-designer', 
+        'marketer-agency',
+        'coach-consultant',
+        'small-business-brand-owner',
+        'other'
+      ]
+    }],
+    creationGoals: [{
+      type: String,
+      enum: [
+        'exploring-creative-direction',
+        'website-ui-digital-product',
+        'brand-identity',
+        'business-strategy',
+        'content-posts-ads-blogs'
+      ]
+    }],
+    
+    // Design Your Direction Tab Data
+    brandWords: [{
+      type: String,
+      maxlength: 50 // limit individual word length
+    }],
+    brandTone: [{
+      type: String
+    }],
+    customBrandTones: [{
+      type: String,
+      maxlength: 30
+    }],
+    designStyle: [{
+      type: String,
+      enum: [
+        'editorial',
+        'clean-neutrals',
+        'high-contrast',
+        'color-rich-expressive',
+        'earth-toned',
+        'dark-sleek'
+      ]
+    }]
+  },
 }, { timestamps: true });
 
 
