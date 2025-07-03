@@ -146,6 +146,7 @@ const imageGeneration = async (req, res) => {
         }
 
         const response = {
+            prompt: prompt,
             type: successfulImages.length === imageCount ? "success" : "partial_success",
             message: `${successfulImages.length}/${imageCount} images generated successfully`,
             requestedQuantity: imageCount,

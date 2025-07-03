@@ -16,7 +16,7 @@ const getGenerations = asyncWrapper(async (req, res) => {
 
 
 
-        const generations = await Generation.find({ user: decoded.userId });
+        const generations = await Generation.find({ user: decoded.userId, type: req.body.type });
 
         res.status(200).json({ type: "success", message: "Generation fetched successfully", generations: generations });
     }
