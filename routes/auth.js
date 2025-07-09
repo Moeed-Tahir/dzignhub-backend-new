@@ -43,7 +43,7 @@ router.route('/resend-otp').post(resendOtp);
 router.route('/social-login').post(socialLogin);
 router.route('/change-password').post(changePassword);
 router.route('/get-profile-data').get(getProfileData);
-router.post('/update-onboarding', updateOnboarding);
+router.route('/update-onboarding').post(pdateOnboarding);
 
 router.route('/edit-profile').post(
     upload.fields([

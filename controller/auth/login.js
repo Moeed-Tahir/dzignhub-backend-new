@@ -22,15 +22,7 @@ const parseUserAgent = (userAgent) => {
 };
 
 const login = asyncWrapper(async (req, res) => {
-    try {
-        await connectDB(process.env.MONGO_URI);
-    } catch (dbError) {
-        console.error("Database connection error:", dbError);
-        return res.status(500).json({ 
-            type: "error", 
-            message: "Database connection failed" 
-        });
-    }
+
 
     const rEmail = req.body.email;
     const rPassword = req.body.password;
