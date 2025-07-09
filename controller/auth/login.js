@@ -3,7 +3,7 @@ const Session = require("../../models/Session");
 const bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 const asyncWrapper = require("../../middleware/async");
-
+const connectDB = require("../../db/connect");
 // Helper function to parse user agent
 const parseUserAgent = (userAgent) => {
     const browser = userAgent.includes('Chrome') ? 'Chrome' : 
@@ -22,6 +22,16 @@ const parseUserAgent = (userAgent) => {
 };
 
 const login = asyncWrapper(async (req, res) => {
+    try {
+        await connectDB(process.env.MONGO_URI);
+    } catch (dbError) {
+        console.error("Database connection error:", dbError);
+        return res.status(500).json({ 
+            type: "error", 
+            message: "Database connection failed" 
+        });
+    }
+
     const rEmail = req.body.email;
     const rPassword = req.body.password;
     
