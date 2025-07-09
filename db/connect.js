@@ -13,6 +13,7 @@ const connectDB = async (url) => {
     }
 
     try {
+        console.log("=> Connecting to MongoDB...");
         const db = await mongoose.connect(url, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
