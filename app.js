@@ -19,6 +19,7 @@ const app = express();
 app.use((req, res, next) => {
   const allowedOrigins = [
     'https://dzignhub-frontend-1fo8.vercel.app',
+    'https://dzignhub.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
     'https://localhost:3000',
