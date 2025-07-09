@@ -47,28 +47,42 @@ app.get('/', (req, res) => {
 
 const port = process.env.PORT || 8080;
 
+
+// Ensure database connection for serverless environments
+const initializeApp = async () => {
+  try {
+      const mongoURI = process.env.MONGO_URI;
+      console.log('Connecting to MongoDB...');
+      await connectDb(mongoURI);
+      console.log('MongoDB connection successful');
+  } catch (err) {
+      console.error('Failed to connect to MongoDB:', err.message);
+      // Don't exit in serverless environments
+      if (process.env.NODE_ENV !== 'production') {
+          process.exit(1);
+      }
+  }
+};
+
+// Initialize database connection
+initializeApp();
+
 // In the start function:
 const start = async () => {
-    try {
-      const mongoURI = process.env.MONGO_URI;
-      
-      console.log('Connecting to MongoDB...')
-      await connectDb(mongoURI);
-      console.log('MongoDB connection successful')
-      
+  try {
+      await initializeApp();
       app.listen(port, () => { 
-        console.log(`Server is running on port ${port}`); 
+          console.log(`Server is running on port ${port}`); 
       });
-    } catch (err) {
-      console.error('Failed to start server:', err.message)
-      process.exit(1)
-    }
-  };
-
+  } catch (err) {
+      console.error('Failed to start server:', err.message);
+      process.exit(1);
+  }
+};
 // Export the app for Vercel
-module.exports = app; 
-
-// Optional: Start the server locally if needed
-if (require.main === module) {
-    start();
-}
+  module.exports = app; 
+  
+  // Start server locally if needed
+  if (require.main === module) {
+      start();
+  }

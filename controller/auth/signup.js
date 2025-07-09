@@ -7,8 +7,7 @@ const { sendOtp } = require("../../services/sendOTP");
 const connectDB = require("../../db/connect"); // update path if needed
 
 const signup = asyncWrapper(async (req, res) => {
-    await connectDB(process.env.MONGO_URI); // ensure DB is connected before anything else
-
+   
     const { email, phone, password } = req.body;
 
     if (!email || !phone || !password) {
