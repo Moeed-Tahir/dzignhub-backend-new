@@ -9,7 +9,10 @@ const updateOnboarding = asyncWrapper(async (req, res) => {
             return res.status(401).json({ message: 'Unauthorized', type: 'error' });
         }
 
+        console.log("Received token:", token);
+
         const verification = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        console.log("Decoded verification:", verification); 
         const user = await User.findById(verification.userId);
 
         if (!user) {

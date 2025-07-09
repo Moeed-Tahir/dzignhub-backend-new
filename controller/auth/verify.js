@@ -10,6 +10,7 @@ const verify = asyncWrapper(async (req, res) => {
     if (!token) {
       return res.status(401).json({ message: 'No token provided', type: 'error' });
     }
+    
 
     // Verify JWT token - this will throw an error if token is invalid or expired
     const verification = jwt.verify(token, process.env.JWT_SECRET_KEY);
