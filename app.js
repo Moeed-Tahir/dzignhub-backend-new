@@ -15,18 +15,38 @@ require('dotenv').config();
 
 const app = express();
 
-// Simple CORS middleware for Vercel deployment
+// Enhanced CORS middleware for Vercel deployment
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  
+  const allowedOrigins = [
+    'https://dzignhub-frontend-1fo8.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'https://localhost:3000',
+    'https://localhost:3001'
+  ];
+
+  const origin = req.headers.origin;
+
+  // Allow all origins for now to troubleshoot
+  res.header('Access-Control-Allow-Origin', origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma');
+  res.header('Access-Control-Expose-Headers', 'Authorization');
+
+  // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
+    console.log('OPTIONS request received for:', req.url);
+    console.log('Origin:', origin);
+    res.status(200).end();
+    return;
   }
+
+  next();
 });
+
+
+
 app.use(express.static('./public'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -38,9 +58,9 @@ app.use(async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Database connection error:', error);
-    return res.status(500).json({ 
-      type: "error", 
-      message: "Database connection failed" 
+    return res.status(500).json({
+      type: "error",
+      message: "Database connection failed"
     });
   }
 });
@@ -53,8 +73,8 @@ app.use(notificationRoutes);
 app.use(sessionsRoutes);
 
 app.get('/', (req, res) => {
-    console.log("Hello world");
-    return res.status(200).json({ success: true });
+  console.log("Hello world");
+  return res.status(200).json({ success: true });
 });
 
 const port = process.env.PORT || 8080;
@@ -62,19 +82,19 @@ const port = process.env.PORT || 8080;
 // For local development
 const start = async () => {
   try {
-      app.listen(port, () => { 
-          console.log(`Server is running on port ${port}`); 
-      });
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
   } catch (err) {
-      console.error('Failed to start server:', err.message);
-      process.exit(1);
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
   }
 };
 
 // Export the app for Vercel
-module.exports = app; 
+module.exports = app;
 
 // Start server locally if needed
 if (require.main === module) {
-    start();
+  start();
 }
