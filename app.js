@@ -1,7 +1,7 @@
 require('express-async-errors');
 const express = require('express');
 const cors = require('cors');
-const connectDb = require('./db/connect');
+const connectDB = require('./db/connect');
 const auth = require('./middleware/auth');
 const errorHandler = require('./middleware/error-handler');
 const notFound = require('./middleware/not-found');
@@ -30,9 +30,21 @@ app.use(express.static('./public'));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+// Database connection middleware - ensures DB is connected before any route
+app.use(async (req, res, next) => {
+  try {
+    await connectDB(process.env.MONGO_URI);
+    next();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    return res.status(500).json({ 
+      type: "error", 
+      message: "Database connection failed" 
+    });
+  }
+});
 
 app.use(smartSessionUpdate);
-
 
 app.use(authRoutes);
 app.use(generationRoutes);
@@ -44,33 +56,11 @@ app.get('/', (req, res) => {
     return res.status(200).json({ success: true });
 });
 
-
 const port = process.env.PORT || 8080;
 
-
-// Ensure database connection for serverless environments
-const initializeApp = async () => {
-  try {
-      const mongoURI = process.env.MONGO_URI;
-      console.log('Connecting to MongoDB...');
-      await connectDb(mongoURI);
-      console.log('MongoDB connection successful');
-  } catch (err) {
-      console.error('Failed to connect to MongoDB:', err.message);
-      // Don't exit in serverless environments
-      if (process.env.NODE_ENV !== 'production') {
-          process.exit(1);
-      }
-  }
-};
-
-// Initialize database connection
-initializeApp();
-
-// In the start function:
+// For local development
 const start = async () => {
   try {
-      await initializeApp();
       app.listen(port, () => { 
           console.log(`Server is running on port ${port}`); 
       });
@@ -79,10 +69,11 @@ const start = async () => {
       process.exit(1);
   }
 };
+
 // Export the app for Vercel
-  module.exports = app; 
-  
-  // Start server locally if needed
-  if (require.main === module) {
-      start();
-  }
+module.exports = app; 
+
+// Start server locally if needed
+if (require.main === module) {
+    start();
+}
