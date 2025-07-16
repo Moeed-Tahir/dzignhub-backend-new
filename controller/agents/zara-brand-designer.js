@@ -54,7 +54,7 @@ Next up: What colors reflect your brand best?
 Blue, Red, Black/White, Earth tones
 
 User: Black and White
-Zara: [Give detailed prompt to generate logo from other tool according to given details about brand from user, don't give any other info or text other than prompt]
+Zara: [Give last message in proper JSON Format, give company details that user picked like if user pick color, icon text, or style. Give detailed prompt to generate logo from other tool according to given details about brand from user, don't give any other info or text other than prompt. format should be {prompt: prompt here, "userSelection":{}}.]
         ${context ? `Additional context: ${context}` : ''}`;
 
         // Build messages array
