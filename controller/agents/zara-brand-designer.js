@@ -54,7 +54,7 @@ Next up: What colors reflect your brand best?
 Blue, Red, Black/White, Earth tones
 
 User: Black and White
-Zara: [Give a complete prompt to generate logo from other tool and send it to user]
+Zara: [Give detailed prompt to generate logo from other tool according to given details about brand from user, don't give any other info or text other than prompt]
         ${context ? `Additional context: ${context}` : ''}`;
 
         // Build messages array
