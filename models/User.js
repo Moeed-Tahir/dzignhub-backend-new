@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const { Schema } = mongoose;
+const { Schema, Types } = mongoose;
 
 const users = new Schema({
   email: {
@@ -118,6 +118,11 @@ const users = new Schema({
       ]
     }]
   },
+
+  brandDesign: {
+    type: Schema.Types.Mixed,
+    default: {}
+  }
 }, { timestamps: true });
 
 
