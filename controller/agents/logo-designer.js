@@ -64,7 +64,7 @@ const logoDesigner = asyncWrapper(async (req, res) => {
             model: "dall-e-3",
             prompt: req.body.prompt,
             n: 1,
-            size: "1024x1024"
+            size: req.body.size || "1024x1024",
         }, {
             headers: {
                 Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,

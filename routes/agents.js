@@ -7,6 +7,7 @@ const updateBrandDesignData = require('../controller/agents/update-brand-design-
 const getBrandDesignData = require('../controller/agents/get-brand-designer-data');
 const noviSeoAgent = require('../controller/agents/novi-seo-agent');
 const strategistMira = require('../controller/agents/strategist-mira');
+const ellieUiUx = require('../controller/agents/ellie-ui-ux-agent');
 
 
 // Routes
@@ -17,5 +18,6 @@ router.route('/agents/update-brand-design-data').post(updateBrandDesignData);
 router.route('/agents/get-brand-designer-data').post(getBrandDesignData);
 router.route('/agents/novi-seo-agent').post(noviSeoAgent);
 router.route('/agents/strategist-mira').post(strategistMira);
+router.route('/agents/ellie-ui-ux').post(ellieUiUx);
 
 module.exports = router;
