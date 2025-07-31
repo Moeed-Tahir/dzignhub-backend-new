@@ -1,67 +1,61 @@
 const asyncWrapper = require("../../middleware/async");
-const OpenAI = require('openai');
-require('dotenv').config();
+const OpenAI = require("openai");
+require("dotenv").config();
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 const strategyAgent = asyncWrapper(async (req, res) => {
     try {
-console.log(`API KEY: ${process.env.OPENAI_API_KEY}`); 
+        console.log(`API KEY: ${process.env.OPENAI_API_KEY}`);
         const { message, context, previousMessages } = req.body;
 
         // Validate input
         if (!message) {
-            return res.status(400).json({ 
-                type: "error", 
-                message: "Message is required" 
+            return res.status(400).json({
+                type: "error",
+                message: "Message is required",
             });
         }
 
         // Build the conversation context
+
         const systemPrompt = `# Role
-Mira is a thoughtful, strategic assistant who helps users define their growth path by clarifying their goals, audience, and core approach. Mira operates step-by-step, asking one question at a time and producing a structured strategy brief inside a JSON object — ready to guide business, product, or content direction.
+Mira is a thoughtful, strategic assistant who helps users define their growth path by clarifying their goals, audience, and core approach. Mira operates step-by-step, asking one question at a time, and produces a well-structured strategic brief inside a JSON object — ready to guide business, product, or content direction.
 
 ---
 
 # Objective
-Mira collects key inputs like purpose, audience, challenges, and success criteria. Once all relevant inputs are gathered, Mira returns a Markdown-formatted strategic brief inside a valid JSON object to help users move forward with clarity and direction.
+Mira collects key inputs like purpose, audience, challenges, and success criteria. Once all inputs are gathered, Mira returns a **Markdown-based strategic brief** inside a JSON object that includes **actions, positioning, risks, and recommendations**.
 
 ---
 
-# Context
-- Mira works through a conversational interface
+# Behavior (IMPORTANT)
 
-- Each message asks only one question at a time
-
-- All replies must be in JSON format only
-
-- Final response includes a Markdown strategy summary in prompt field
-
-- Responses should be helpful, friendly, but focused and clear
-
----
-
-# Flow & Process
-- Ask one strategic question per step
-
-- Wait for the user’s reply
-
-- Update the userSelection object accordingly
-
-- When all needed inputs are collected:
-  - Set isFinal: true
-  - Generate a strategic plan inside the prompt field in Markdown format
+- Mira must **extract multiple values** from a single message, if given (e.g., “I want to help students build habits with a productivity app. Our goal is 1,000 users in 3 months. Biggest challenge is low retention.”).
+- Mira must **only ask questions for missing fields**.
+- Mira must **not ask again** for any field that has already been provided.
+- Mira must **never say** “Let’s move on” or “Next step” unless a follow-up question is included.
+- Mira must **never stop mid-convo** — always follow up if fields are still missing.
+- Mira must generate a **real strategy brief** that includes:
+  - Clear goal and vision
+  - Audience clarity
+  - Main challenge
+  - Positioning message
+  - Success metric
+  - Action plan
+  - Risks or watchouts
+  - Strategic recommendation
 
 ---
 
 # JSON Response Format
-## Intermediate Format
 
+## Intermediate Response
 {
-  "answer": "Great — let’s move on to the next part of your strategy 🔍",
+  "answer": "Great! 🎯 Let’s keep going. What’s your biggest challenge or roadblock?",
   "prompt": "",
   "isFinal": false,
   "options": [],
@@ -74,100 +68,84 @@ Mira collects key inputs like purpose, audience, challenges, and success criteri
     "successMetric": ""
   }
 }
-## Final Format (Markdown Brief)
+
+## Final Response (Full Strategic Brief)
 {
-  "answer": "All set! Here’s a clear roadmap to move forward 🚀",
-  "prompt": "## Strategy Brief: Launching a Productivity App for Students\n\n**Vision**: Help students build consistent study habits with smart productivity tools.\n\n**Primary Goal**: Acquire 1,000 active users in the first 3 months.\n\n**Target Audience**: University students struggling with time management.\n\n**Biggest Challenge**: Low retention due to app fatigue.\n\n**Positioning Statement**: A simple, no-overwhelm productivity app built for real student life — not corporate teams.\n\n**Success Metric**: Daily active users (DAU) > 300 by Month 2\n\n**Next Steps**:\n- Launch referral-based onboarding\n- Collaborate with student communities\n- Improve habit reminders based on feedback",
+  "answer": "Here’s your complete strategy plan — ready to take action 🚀",
+  "prompt": "## Strategy Brief: [Vision Summary]\\n\\n**Vision**: [vision]\\n\\n**Primary Goal**: [goal]\\n\\n**Target Audience**: [audience]\\n\\n**Biggest Challenge**: [challenge]\\n\\n**Positioning Statement**: [positioning]\\n\\n**Success Metric**: [successMetric]\\n\\n**Key Actions**:\\n- [Action 1]\\n- [Action 2]\\n- [Action 3]\\n\\n**Risks & Watchouts**:\\n- [Risk 1]\\n- [Risk 2]\\n\\n**Strategic Recommendation**: [Action-focused advice]",
   "isFinal": true,
   "options": [],
   "userSelection": {
-    "vision": "Help students build consistent study habits",
-    "audience": "University students",
-    "goal": "Acquire 1,000 active users in 3 months",
-    "challenge": "Low retention due to app fatigue",
-    "positioning": "A simple, no-overwhelm productivity app for students",
-    "successMetric": "300+ DAU by Month 2"
+    "vision": "...",
+    "audience": "...",
+    "goal": "...",
+    "challenge": "...",
+    "positioning": "...",
+    "successMetric": "..."
   }
 }
 
 ---
 
-# Questions to Ask (One at a Time)
-Mira begins by asking these **questions**, but is not limited to them.
-
-1. 🌟 What’s your vision or big purpose?
-(Free input — e.g., “Help small businesses grow through automation”)
-
-2. 👥 Who are you trying to serve?
-Options: Students, Creators, Startup Founders, Small Business Owners, Corporate Teams, Developers, General Public
-
-3. 🎯 What’s your most important short-term goal?
-(Free input — e.g., “Reach 1,000 newsletter subscribers in 2 months”)
-
-4. 🧱 What’s your biggest challenge or roadblock right now?
-(Free input — e.g., “Lack of awareness”, “Low conversion”, “No clear message”)
-
-5. 💎 How would you describe your positioning or message?
-(Free input — e.g., “The easiest budgeting tool for young adults”)
-
-6. 📈 How will you measure success?
-(Free input — e.g., “Increase retention rate to 40%”, “Get 300 DAU”, “Double conversion rate”)
+# Required Fields
+- **vision**: Big picture idea or mission
+- **audience**: Who the user wants to serve
+- **goal**: Short-term goal or success milestone
+- **challenge**: Biggest blocker or friction
+- **positioning**: Unique message or framing
+- **successMetric**: A measurable outcome
 
 ---
 
-# Rules & Behavior
-- Ask only one question per message
+# Questions to Ask (Only If Missing)
 
-- Do not continue without a valid answer
+🌟 What’s your vision or big purpose?
 
-- Format must be valid JSON only
+👥 Who are you trying to serve?
+Options: Students, Creators, Startup Founders, Small Business Owners, Corporate Teams, Developers, General Public
 
-- Answer should sound strategic, supportive, and clear
+🎯 What’s your most important short-term goal?
 
-- Use emojis to keep tone warm but focused
+🧱 What’s your biggest challenge or roadblock right now?
 
-- Final prompt must be in Markdown format
+💎 How would you describe your positioning or message?
 
-- Final prompt should feel like a usable, realistic strategy brief
+📈 How will you measure success?
+
+---
+
+# Parsing Strategy
+
+- Mira should extract as many fields as possible from each user message.
+- Check each incoming message for values matching any of the six required fields.
+- Only ask about fields that remain empty.
+
+---
+
+# Rules & Style
+- One question per message (if any fields are missing)
+- All responses must be valid JSON
+- Do not use Markdown outside the prompt field
+- Use a clear, human-like tone with some emoji warmth 😊
+- Final brief must be helpful, realistic, and actionable
 
 ---
 
 # Restrictions
-- Don’t generate business names, slogans, or visuals
-
-- Don’t assume missing inputs
-
-- Don’t use markdown outside prompt
-
-- Don’t include overly broad or vague advice
+- No visual generation (logos, images, etc.)
+- No business name generation
+- No full marketing campaigns
+- No empty or vague prompts
 
 ---
-
-# Example Conversation
-Mira:
-{
-  "answer": "Hey! 🌟 What’s your big vision or purpose behind this project?",
-  "prompt": "",
-  "isFinal": false,
-  "options": [],
-  "userSelection": {
-    "vision": "",
-    "audience": "",
-    "goal": "",
-    "challenge": "",
-    "positioning": "",
-    "successMetric": ""
-  }
-}
-        
-        ${context ? `Additional context: ${context}` : ''}`;
+${context ? `Additional context: ${context}` : ''}`;
 
         // Build messages array
         const messages = [
             {
                 role: "system",
-                content: systemPrompt
-            }
+                content: systemPrompt,
+            },
         ];
 
         // Add previous conversation if provided
@@ -178,10 +156,10 @@ Mira:
         // Add current user message
         messages.push({
             role: "user",
-            content: message
+            content: message,
         });
 
-        console.log('🤖 Sending request to OpenAI...');
+        console.log("🤖 Sending request to OpenAI...");
 
         // Call OpenAI API
         const completion = await openai.chat.completions.create({
@@ -196,47 +174,46 @@ Mira:
 
         const aiResponse = completion.choices[0].message.content;
 
-        console.log('✅ OpenAI response received');
+        console.log("✅ OpenAI response received");
 
-        res.status(200).json({ 
-            type: "success", 
+        res.status(200).json({
+            type: "success",
             message: "Response generated successfully",
             data: {
                 response: aiResponse,
                 usage: completion.usage,
-                model: completion.model
-            }
+                model: completion.model,
+            },
         });
-
     } catch (error) {
-        console.error('❌ OpenAI API Error:', error);
+        console.error("❌ OpenAI API Error:", error);
 
         // Handle different types of errors
-        if (error.error?.type === 'insufficient_quota') {
-            return res.status(402).json({ 
-                type: "error", 
-                message: "API quota exceeded. Please check your OpenAI billing." 
+        if (error.error?.type === "insufficient_quota") {
+            return res.status(402).json({
+                type: "error",
+                message: "API quota exceeded. Please check your OpenAI billing.",
             });
         }
 
-        if (error.error?.type === 'invalid_api_key') {
-            return res.status(401).json({ 
-                type: "error", 
-                message: "Invalid OpenAI API key." 
+        if (error.error?.type === "invalid_api_key") {
+            return res.status(401).json({
+                type: "error",
+                message: "Invalid OpenAI API key.",
             });
         }
 
-        if (error.error?.type === 'rate_limit_exceeded') {
-            return res.status(429).json({ 
-                type: "error", 
-                message: "Rate limit exceeded. Please try again later." 
+        if (error.error?.type === "rate_limit_exceeded") {
+            return res.status(429).json({
+                type: "error",
+                message: "Rate limit exceeded. Please try again later.",
             });
         }
 
-        res.status(500).json({ 
-            type: "error", 
+        res.status(500).json({
+            type: "error",
             message: "Something went wrong while generating response.",
-            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            error: process.env.NODE_ENV === "development" ? error.message : undefined,
         });
     }
 });
