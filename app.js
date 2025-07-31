@@ -10,6 +10,7 @@ const generationRoutes = require('./routes/generation');
 const notificationRoutes = require('./routes/notifications');
 const sessionsRoutes = require('./routes/sessions');
 const agentsRoutes = require('./routes/agents');
+const chatbotRoutes = require('./routes/chatbot');
 const smartSessionUpdate = require('./middleware/smartSessionUpdate');
 
 require('dotenv').config();
@@ -73,7 +74,8 @@ app.use(authRoutes);
 app.use(generationRoutes);
 app.use(notificationRoutes);
 app.use(sessionsRoutes);
-app.use(agentsRoutes)
+app.use(agentsRoutes);
+app.use(chatbotRoutes);
 
 app.get('/', (req, res) => {
   console.log("Hello world");
