@@ -6,6 +6,7 @@ const videoGeneration = require('../controller/generation/video-generation');
 const saveGeneration = require('../controller/generation/save-generation');
 const getGenerations = require('../controller/generation/get-generations');
 const getUserGenerations = require('../controller/generation/get-user-generations');
+const saveLocalGenerations = require('../controller/generation/save-local-generations');
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -24,6 +25,7 @@ const upload = multer({
 });
 
 // Routes
+router.route('/save-local-generations').post(saveLocalGenerations);
 router.route('/generate-image').post(imageGeneration);
 router.route('/save-generation').post(saveGeneration);
 router.route('/get-generations').get(getGenerations);
