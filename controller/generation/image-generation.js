@@ -52,12 +52,12 @@ async function streamToBuffer(stream) {
 }
 
 // Simplified upload function using Supabase client directly
-const uploadFile = async (bucketName, fileName, imageBuffer) => {
+const uploadFile = async (bucketName, fileName, imageBuffer, contentType = "image/jpeg") => {
   try {
     const { data, error } = await supabase.storage
       .from(bucketName)
       .upload(fileName, imageBuffer, {
-        contentType: "image/jpeg",
+        contentType: contentType,
         cacheControl: "3600",
         upsert: true,
       });
@@ -80,104 +80,161 @@ const uploadFile = async (bucketName, fileName, imageBuffer) => {
 
 const imageGeneration = async (req, res) => {
   try {
-    const { prompt, style, size, colors, quantity = 1 } = req.body;
-
-    if (
-      !prompt ||
-      !style ||
-      !size ||
-      !Array.isArray(colors)
-    ) {
-      return res.status(400).json({ error: "Invalid input data" });
+    const { prompt, size, quantity = 1 } = req.body;
+    
+    let style, colors;
+    try {
+      style = JSON.parse(req.body.style || '{}');
+      colors = JSON.parse(req.body.colors || '[]');
+    } catch (parseError) {
+      console.error("Error parsing JSON fields:", parseError);
+      return res.status(400).json({ error: "Invalid JSON in style or colors field" });
     }
+    const uploadedFile = req.file;
 
-    const imageCount = Math.min(Math.max(parseInt(quantity), 1), 4);
-
-    // Build final prompt (same as before)
-    const colorNames = colors.map((hex) => {
-      const result = namer(hex);
-      return result.basic[0].name;
+    console.log("Received data:", {
+      prompt,
+      style,
+      size,
+      colors,
+      quantity,
+      hasFile: !!uploadedFile
     });
 
-    const styleText = styleMap[style.name] || "";
-    const colorText =
-      colors.length == 0 || colors == ""
-        ? ""
-        : `with colors like ${colorNames.join(", ")}`;
-    const fullPrompt = `${prompt}, ${styleText}, ${colorText}`;
-
-    const input = {
-      prompt: fullPrompt,
-      aspect_ratio: aspectRatioMap[size] || "1:1",
-      prompt_upsampling: true,
-      safety_tolerance: 2,
-      output_format: "webp",
-      output_quality: 80,
-    };
-
-    console.log(`Generating ${imageCount} images in parallel...`);
-
-    // Create array of generation promises
-    const generationPromises = Array.from({ length: imageCount }, (_, i) =>
-      generateAndUploadImage(input, i + 1),
-    );
-
-    // Wait for all promises to settle (success or failure)
-    const results = await Promise.allSettled(generationPromises);
-
-    // Separate successful and failed results
-    const successfulImages = [];
-    const failedImages = [];
-
-    results.forEach((result, index) => {
-      if (result.status === "fulfilled") {
-        successfulImages.push(result.value);
-      } else {
-        failedImages.push({
-          index: index + 1,
-          error: result.reason.message || "Unknown error",
-        });
-        console.error(`Image ${index + 1} failed:`, result.reason);
-      }
-    });
-
-    // Determine response based on results
-    if (successfulImages.length === 0) {
-      return res.status(500).json({
-        type: "error",
-        message: "All images failed to generate",
-        failedCount: failedImages.length,
-        errors: failedImages,
+     // Validate required fields
+     if (!prompt || !style || !size || !Array.isArray(colors)) {
+      console.log("Validation failed:", {
+        hasPrompt: !!prompt,
+        hasStyle: !!style,
+        hasSize: !!size,
+        colorsIsArray: Array.isArray(colors)
+      });
+      return res.status(400).json({ 
+        error: "Invalid input data",
+        details: {
+          prompt: !prompt ? "Missing prompt" : "OK",
+          style: !style ? "Missing style" : "OK", 
+          size: !size ? "Missing size" : "OK",
+          colors: !Array.isArray(colors) ? "Colors must be an array" : "OK"
+        }
       });
     }
 
-    const response = {
-      prompt: prompt,
-      type:
-        successfulImages.length === imageCount ? "success" : "partial_success",
-      message: `${successfulImages.length}/${imageCount} images generated successfully`,
-      requestedQuantity: imageCount,
-      successfulCount: successfulImages.length,
-      failedCount: failedImages.length,
-      images: successfulImages,
-      totalSize: successfulImages.reduce((sum, img) => sum + img.fileSize, 0),
-    };
 
-    // Include error details if some failed
-    if (failedImages.length > 0) {
-      response.errors = failedImages;
-      response.message += `. ${failedImages.length} images failed to generate.`;
+    const imageCount = Math.min(Math.max(parseInt(quantity), 1), 4);
+    // Get uploaded file from multer (same pattern as video generation)
+
+    // Upload file to Supabase and get URL
+    let imagePromptUrl = null;
+    if (uploadedFile) {
+      console.log("Uploading file to Supabase...");
+      
+      const imageFileName = `image-prompt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${uploadedFile.originalname.split('.').pop()}`;
+      const bucketName = "allmyai-content";
+      
+      imagePromptUrl = await uploadFile(bucketName, imageFileName, uploadedFile.buffer, uploadedFile.mimetype);
+      console.log("✅ Image uploaded to Supabase:", imagePromptUrl);
     }
 
-    res.status(200).json(response);
-  } catch (error) {
-    console.error("Error in image generation:", error);
-    res.status(500).json({
-      type: "error",
-      message: "Failed to start image generation",
-      details: error.message,
+
+
+
+// Build final prompt 
+const colorNames = colors.map((hex) => {
+  const result = namer(hex);
+  return result.basic[0].name;
+});
+
+const styleText = styleMap[style.name] || "";
+const colorText =
+  colors.length == 0 || colors == ""
+    ? ""
+    : `with colors like ${colorNames.join(", ")}`;
+const fullPrompt = `${prompt}, ${styleText}, ${colorText}`;
+
+const input = {
+  prompt: fullPrompt,
+  aspect_ratio: aspectRatioMap[size] || "1:1",
+  prompt_upsampling: true,
+  safety_tolerance: 2,
+  output_format: "webp",
+  output_quality: 80,
+};
+
+
+
+
+    // Add image URL to input
+    if (imagePromptUrl) {
+      input.image_prompt = imagePromptUrl;
+      console.log("✅ Image URL added to generation input");
+    }
+
+    console.log("Image Prompt URL: ", imagePromptUrl)
+
+console.log(`Generating ${imageCount} images in parallel...`);
+
+// Create array of generation promises
+const generationPromises = Array.from({ length: imageCount }, (_, i) =>
+  generateAndUploadImage(input, i + 1),
+);
+
+// Wait for all promises to settle (success or failure)
+const results = await Promise.allSettled(generationPromises);
+
+// Separate successful and failed results
+const successfulImages = [];
+const failedImages = [];
+
+results.forEach((result, index) => {
+  if (result.status === "fulfilled") {
+    successfulImages.push(result.value);
+  } else {
+    failedImages.push({
+      index: index + 1,
+      error: result.reason.message || "Unknown error",
     });
+    console.error(`Image ${index + 1} failed:`, result.reason);
   }
+});
+
+// Determine response based on results
+if (successfulImages.length === 0) {
+  return res.status(500).json({
+    type: "error",
+    message: "All images failed to generate",
+    failedCount: failedImages.length,
+    errors: failedImages,
+  });
+}
+
+const response = {
+  prompt: prompt,
+  type:
+    successfulImages.length === imageCount ? "success" : "partial_success",
+  message: `${successfulImages.length}/${imageCount} images generated successfully`,
+  requestedQuantity: imageCount,
+  successfulCount: successfulImages.length,
+  failedCount: failedImages.length,
+  images: successfulImages,
+  totalSize: successfulImages.reduce((sum, img) => sum + img.fileSize, 0),
+};
+
+// Include error details if some failed
+if (failedImages.length > 0) {
+  response.errors = failedImages;
+  response.message += `. ${failedImages.length} images failed to generate.`;
+}
+
+res.status(200).json(response);
+  } catch (error) {
+  console.error("Error in image generation:", error);
+  res.status(500).json({
+    type: "error",
+    message: "Failed to start image generation",
+    details: error.message,
+  });
+}
 };
 
 // Enhanced helper function with better error handling

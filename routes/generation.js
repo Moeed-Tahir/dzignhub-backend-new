@@ -26,7 +26,12 @@ const upload = multer({
 
 // Routes
 router.route('/save-local-generations').post(saveLocalGenerations);
-router.route('/generate-image').post(imageGeneration);
+// Add multer middleware to image generation route
+router.route('/generate-image').post(
+    upload.single('uploadedImageFromTextArea'),
+    imageGeneration
+);
+
 router.route('/save-generation').post(saveGeneration);
 router.route('/get-generations').get(getGenerations);
 router.route('/get-user-generations').post(getUserGenerations);
