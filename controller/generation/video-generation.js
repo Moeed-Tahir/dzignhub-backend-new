@@ -204,7 +204,7 @@ const videoGeneration = async (req, res) => {
         console.log("Starting video generation with Kling...");
 
         // Generate video with Kling
-        const outputStream = await replicate.run("kwaivgi/kling-v1.6-pro", { input });
+        const outputStream = await replicate.run("kwaivgi/kling-v1.6-standard", { input });
 
         // Convert stream to buffer
         console.log("Converting video stream to buffer...");
