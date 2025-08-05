@@ -82,13 +82,27 @@ const imageGeneration = async (req, res) => {
   try {
     const { prompt, size, quantity = 1 } = req.body;
     
-    let style, colors;
-    try {
-      style = JSON.parse(req.body.style || '{}');
-      colors = JSON.parse(req.body.colors || '[]');
-    } catch (parseError) {
-      console.error("Error parsing JSON fields:", parseError);
-      return res.status(400).json({ error: "Invalid JSON in style or colors field" });
+    // Handle style - could be JSON string or plain string
+    if (typeof req.body.style === 'string') {
+      try {
+        style = JSON.parse(req.body.style);
+      } catch {
+        // If parsing fails, treat as plain string
+        style = { name: req.body.style };
+      }
+    } else {
+      style = {name: "normal style"};
+    }
+    
+    // Handle colors - could be JSON string or plain array
+    if (typeof req.body.colors === 'string') {
+      try {
+        colors = JSON.parse(req.body.colors);
+      } catch {
+        colors = [];
+      }
+    } else {
+      colors = req.body.colors || [];
     }
     const uploadedFile = req.file;
 
