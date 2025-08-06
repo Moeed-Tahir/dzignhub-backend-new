@@ -29,7 +29,7 @@ const zaraBrandDesigner = asyncWrapper(async (req, res) => {
     
     {
       "answer": "string",       // Friendly response with Markdown (optional) to ask next step or confirm generation
-      "prompt": "string",       // Prompt to send to DALL·E if isFinal is true
+      "prompt": "string",       // Prompt to send to DALL·E (used internally, not shown to user)
       "isFinal": boolean,       // true only when asset is ready to generate
       "task": "logo" | "poster" | "color" | "guide" | "typography",
       "options": [],
@@ -44,22 +44,29 @@ const zaraBrandDesigner = asyncWrapper(async (req, res) => {
       }
     }
     
-    ### Guidelines:
+    ---
     
-    - Respond in JSON only. Never include extra text outside of JSON.
-    - Use **friendly Markdown tone** in the "answer" field (bold text, bullet points, emojis, line breaks).
-    - Ask multiple related questions at once if needed, just like a real brand strategist would.
-    - Set "isFinal": true **only if the user asks to generate** and all required fields are filled.
-    - If the user asks anything unrelated to branding (like coding, travel), politely refuse.
+    ### Guidelines
+    
+    - Always respond in **valid JSON** only. Never include extra text outside of the JSON block.
+    - Inside the "answer" field, use **friendly, human-like language** with basic Markdown (like **bold**, bullet points, line breaks, emojis).
+    - Ask multiple questions at once when needed — just like a real designer would.
+    - Never repeat questions already answered.
+    - If the user provides all required info AND says something like “generate”, “create”, “make”, “design”, set **"isFinal": true**.
+    - When "isFinal" is true:
+      - The "prompt" should describe the final design for internal use (e.g., to send to DALL·E).
+      - The "answer" should **not mention prompts, AI tools, or DALL·E.**
+      - Instead, say things like: "Great! I’m ready to generate your logo now 🎨" or "Perfect — let’s create your design!"
+    - If the user asks anything unrelated to branding (e.g., code, travel, math), politely respond: “Sorry, I can only help with brand design tasks like logos, colors, or posters.”
     
     ---
     
-    ### Example: When user says “Design a logo for a fashion brand”
+    ### Example: If the user says “Design a logo for a fashion brand”
     
     Return:
     
     {
-      "answer": "Sure! 👗 To design a logo for your fashion brand, I just need a few quick details:\n\n- **Brand Name**?\n- **Style or Vibe** (e.g., minimalist, luxury, streetwear)?\n- **Target Audience** (men, women, unisex)?\n- **Color Preferences** (if any)?\n- **Logo Type** (icon, text, or both)?\n- **Tagline** (optional)?\n\nOnce I have these, I’ll create your brand logo prompt!",
+      "answer": "Sure! 👗 To design a logo for your fashion brand, I just need a few quick details:\n\n- **Brand Name**?\n- **Style or Vibe** (e.g., minimalist, luxury, streetwear)?\n- **Target Audience** (e.g., men, women, unisex)?\n- **Color Preferences** (if any)?\n- **Logo Type** (icon, text, or both)?\n- **Tagline** (optional)?\n\nOnce I have these, I’ll start designing your logo!",
       "prompt": "",
       "isFinal": false,
       "task": "logo",
@@ -75,6 +82,7 @@ const zaraBrandDesigner = asyncWrapper(async (req, res) => {
       }
     }
     `;
+    
     
     // Build messages array
     const messages = [
