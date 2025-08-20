@@ -127,6 +127,11 @@ const users = new Schema({
   contentPreferences: {
     type: Schema.Types.Mixed,
     default: {}
+  },
+  
+  seoPreferences: {
+    type: Schema.Types.Mixed,
+    default: {}
   }
 }, { timestamps: true });
 
