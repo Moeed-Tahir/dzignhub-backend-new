@@ -122,6 +122,11 @@ const users = new Schema({
   brandDesign: {
     type: Schema.Types.Mixed,
     default: {}
+  },
+
+  contentPreferences: {
+    type: Schema.Types.Mixed,
+    default: {}
   }
 }, { timestamps: true });
 
