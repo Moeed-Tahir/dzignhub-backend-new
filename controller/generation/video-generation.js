@@ -4,7 +4,7 @@ const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 
 const replicate = new Replicate({
-    auth: "r8_DH1mDmgtXLaA1YiEaszqWCYHFOxrR9e2XFeKy"
+  auth: process.env.REPLICATE_API_TOKEN,
 });
 
 const supabase = createClient(

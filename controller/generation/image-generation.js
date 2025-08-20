@@ -2,8 +2,9 @@ const Replicate = require("replicate");
 const tus = require("tus-js-client");
 const { createClient } = require("@supabase/supabase-js");
 const namer = require("color-namer");
+
 const replicate = new Replicate({
-  auth: "r8_DH1mDmgtXLaA1YiEaszqWCYHFOxrR9e2XFeKy",
+  auth: process.env.REPLICATE_API_TOKEN,
 });
 
 const supabase = createClient(
