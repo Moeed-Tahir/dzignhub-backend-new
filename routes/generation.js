@@ -41,7 +41,7 @@ router.route('/generate-video').post(
     upload.fields([
         { name: 'startImage', maxCount: 1 },
         { name: 'endImage', maxCount: 1 }
-    ]), 
+    ]),
     videoGeneration
 );
 

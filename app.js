@@ -17,8 +17,8 @@ require('dotenv').config();
 
 const app = express();
 
-// Enhanced CORS middleware for Vercel deployment
 app.use((req, res, next) => {
+
   const allowedOrigins = [
     'https://dzignhub-frontend-1fo8.vercel.app',
     'https://dzignhub.vercel.app',
@@ -82,7 +82,7 @@ app.get('/', (req, res) => {
   return res.status(200).json({ success: true });
 });
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 7878;
 
 // For local development
 const start = async () => {
