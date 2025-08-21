@@ -204,7 +204,7 @@ const videoGeneration = async (req, res) => {
         console.log("Starting video generation with Kling...");
 
         // Generate video with Kling
-        const outputStream = await replicate.run("kwaivgi/kling-v1.6-standard", { input });
+        const outputStream = await replicate.run("wan-video/wan-2.2-t2v-fast", { input });
 
         // Convert stream to buffer
         console.log("Converting video stream to buffer...");
@@ -218,6 +218,8 @@ const videoGeneration = async (req, res) => {
         const videoUrl = await uploadFile(bucketName, videoFileName, videoBuffer, 'video/mp4');
         
         console.log("Video uploaded successfully!");
+
+        console.log("Video URL: ", videoUrl);
         
         const response = {
             type: "success",
@@ -234,6 +236,7 @@ const videoGeneration = async (req, res) => {
                 endImageUrl: endImageUrl
             }
         };
+        console.log("sending response: ", response);
 
         res.status(200).json(response);
     } catch (error) {
