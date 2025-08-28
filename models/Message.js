@@ -20,6 +20,21 @@ const messageSchema = new Schema({
         ref: 'User',
         required: true
     },
+    searchResults: {
+        keywords: String,
+        results: [{
+            title: String,
+            link: String,
+            source: String,
+            snippet: String
+        }]
+    },
+    inspirationImages: [{
+        title: String,
+        url: String,
+        source: String,
+        thumbnail: String
+    }],
 }, { timestamps: true });
 
 
