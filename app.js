@@ -17,7 +17,6 @@ require('dotenv').config();
 
 const app = express();
 
-// Enhanced CORS middleware for Vercel deployment
 app.use((req, res, next) => {
   const allowedOrigins = [
     'https://dzignhub-frontend-1fo8.vercel.app',
@@ -30,14 +29,12 @@ app.use((req, res, next) => {
 
   const origin = req.headers.origin;
 
-  // Allow all origins for now to troubleshoot
   res.header('Access-Control-Allow-Origin', origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma');
   res.header('Access-Control-Expose-Headers', 'Authorization');
 
-  // Handle preflight requests
   if (req.method === 'OPTIONS') {
     console.log('OPTIONS request received for:', req.url);
     console.log('Origin:', origin);
