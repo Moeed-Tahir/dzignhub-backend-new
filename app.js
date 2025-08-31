@@ -97,7 +97,7 @@ app.get('/', (req, res) => {
   return res.status(200).json({ success: true });
 });
 
-const port = process.env.PORT || 7878;
+const port = process.env.PORT || 8080;
 
 // For local development
 const start = async () => {
