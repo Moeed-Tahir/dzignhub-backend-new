@@ -35,6 +35,51 @@ const messageSchema = new Schema({
         source: String,
         thumbnail: String
     }],
+
+    toolSteps: [{
+        type: {
+            type: String,
+            enum: ['status', 'tool_start', 'tool_result']
+        },
+        name: String,
+        message: String,
+        status: String,
+        resultMessage: String,
+        data: Schema.Types.Mixed, // Flexible for any data
+        timestamp: Date
+    }],
+    thinkingProcess: {
+        thinking: String,
+        reasoning: String,
+        analysis: String,
+        plan: String,
+        strategy: String,
+        creative_process: String,
+        design_decisions: String,
+        process: String,
+        findings: String,
+        approach: String,
+        evaluation: String,
+        quality_check: String
+    },
+    imageUrl: String,
+    isLogo: {
+        type: Boolean,
+        default: false
+    },
+    status: {
+        type: String,
+        enum: ['processing', 'thinking', 'complete', 'error', 'awaiting_input'],
+        default: 'complete'
+    },
+    isError: {
+        type: Boolean,
+        default: false
+    },
+    shouldTypeText: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 
