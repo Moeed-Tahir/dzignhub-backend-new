@@ -23,7 +23,7 @@ const saveGeneration = asyncWrapper(async (req, res) => {
                     user: decoded.userId,
                     prompt: req.body.prompt,
                     type: req.body.type,
-                    url: images[i].imageUrl || images[i].videoUrl,
+                    url: images[i].imageUrl,
                     size: images[i].fileSize
                 });
                 await newGeneration.save();
@@ -35,8 +35,8 @@ const saveGeneration = asyncWrapper(async (req, res) => {
             user: decoded.userId,
             prompt: req.body.prompt,
             type: req.body.type,
-            url: req.body.url || req.body.imageUrl,
-            size: req.body.fileSize || req.body.size
+            url: req.body.url.imageUrl,
+            size: req.body.url.fileSize
         });
         const gen = await newGeneration.save();
 

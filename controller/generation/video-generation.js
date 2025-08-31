@@ -1,5 +1,4 @@
 const Replicate = require("replicate");
-require("dotenv").config();
 
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
@@ -9,16 +8,15 @@ const replicate = new Replicate({
 });
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,  // Use environment variable
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-  },
+    "https://qnlscpmwamswjhhoorwt.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFubHNjcG13YW1zd2poaG9vcnd0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDc4MDMzMSwiZXhwIjoyMDY2MzU2MzMxfQ.52UneeW6RjFP9Rf-VG0F6jX6KiGiEIX25cdr2M3xCtg",
+    {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    }
 );
-
 const styleMap = {
     "Golden hour": "cinematic style with warm golden lighting, like during sunset",
     "Candle lit": "soft candle-lit ambiance with warm, flickering shadows",
@@ -206,7 +204,7 @@ const videoGeneration = async (req, res) => {
         console.log("Starting video generation with Kling...");
 
         // Generate video with Kling
-        const outputStream = await replicate.run("wan-video/wan-2.2-t2v-fast", { input });
+        const outputStream = await replicate.run("kwaivgi/kling-v1.6-standard", { input });
 
         // Convert stream to buffer
         console.log("Converting video stream to buffer...");
@@ -220,8 +218,6 @@ const videoGeneration = async (req, res) => {
         const videoUrl = await uploadFile(bucketName, videoFileName, videoBuffer, 'video/mp4');
         
         console.log("Video uploaded successfully!");
-
-        console.log("Video URL: ", videoUrl);
         
         const response = {
             type: "success",
@@ -238,7 +234,6 @@ const videoGeneration = async (req, res) => {
                 endImageUrl: endImageUrl
             }
         };
-        console.log("sending response: ", response);
 
         res.status(200).json(response);
     } catch (error) {
