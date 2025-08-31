@@ -1,6 +1,7 @@
 const Generation = require("../../models/Generation");
 const jwt = require("jsonwebtoken");
-const asyncWrapper = require("../../middleware/async")
+const asyncWrapper = require("../../middleware/async");
+
 const getGenerations = asyncWrapper(async (req, res) => {
 
     try {
