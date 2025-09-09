@@ -137,7 +137,14 @@ const users = new Schema({
   strategyPreferences: {
     type: Schema.Types.Mixed,
     default: {}
-  }
+  },
+
+  recentGeneration: {
+    businessFingerprint: String,
+    slidesUrl: String,
+    generatedAt: Date,
+    expiresAt: Date  // Auto-cleanup after some time
+  },
 }, { timestamps: true });
 
 

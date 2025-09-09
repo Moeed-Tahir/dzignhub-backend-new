@@ -45,6 +45,7 @@ const messageSchema = new Schema({
         message: String,
         status: String,
         resultMessage: String,
+        conversationalText: String,
         data: Schema.Types.Mixed, // Flexible for any data
         timestamp: Date
     }],
