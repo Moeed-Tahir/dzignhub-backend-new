@@ -1,12 +1,11 @@
 const Replicate = require("replicate");
-
+env = require("dotenv").config();
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
+    auth: process.env.REPLICATE_API_TOKEN,
 });
-
 const supabase = createClient(
     "https://qnlscpmwamswjhhoorwt.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFubHNjcG13YW1zd2poaG9vcnd0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDc4MDMzMSwiZXhwIjoyMDY2MzU2MzMxfQ.52UneeW6RjFP9Rf-VG0F6jX6KiGiEIX25cdr2M3xCtg",
@@ -24,13 +23,13 @@ const styleMap = {
     "Film haze": "dreamy film haze effect with vintage tones and subtle grain",
     "Midnight": "dark atmospheric style with cool tones and night-time mood",
     "Light": "bright minimal style with soft natural lighting and airy feel"
-  };
+};
 
 const sizeMap = {
-    "square": "1:1",
-    "landscape": "16:9", 
+    // "square": "1:1",
+    "landscape": "16:9",
     "portrait": "9:16",
-    "ultrawide": "21:9"
+    // "ultrawide": "21:9"
 };
 
 async function streamToBuffer(stream) {
@@ -80,10 +79,10 @@ const uploadFile = async (bucketName, fileName, fileBuffer, contentType) => {
 // Process uploaded image file to get URL
 const processImageFile = async (file, bucketName, prefix) => {
     if (!file) return null;
-    
+
     const fileName = `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
     const fileBuffer = file.buffer || await streamToBuffer(file);
-    
+
     return await uploadFile(bucketName, fileName, fileBuffer, 'image/jpeg');
 };
 
@@ -108,7 +107,7 @@ const videoGeneration = async (req, res) => {
         }
 
         if (!styleMap[style]) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: "Valid style is required",
                 receivedStyle: style,
                 availableStyles: Object.keys(styleMap)
@@ -127,9 +126,9 @@ const videoGeneration = async (req, res) => {
             if (match) {
                 convertedDuration = parseInt(match[1]);
             } else {
-                return res.status(400).json({ 
+                return res.status(400).json({
                     error: "Invalid duration format",
-                    receivedDuration: duration 
+                    receivedDuration: duration
                 });
             }
         } else {
@@ -139,7 +138,7 @@ const videoGeneration = async (req, res) => {
         console.log("Converted duration:", convertedDuration);
 
         if (isNaN(convertedDuration) || convertedDuration < 1 || convertedDuration > 10) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: "Duration must be between 1-10 seconds",
                 receivedDuration: duration,
                 convertedDuration: convertedDuration
@@ -147,7 +146,7 @@ const videoGeneration = async (req, res) => {
         }
 
         if (!size || !sizeMap[size]) {
-            return res.status(400).json({ 
+            return res.status(400).json({
                 error: "Valid size is required",
                 receivedSize: size,
                 availableSizes: Object.keys(sizeMap)
@@ -161,7 +160,7 @@ const videoGeneration = async (req, res) => {
         console.log("Size:", size);
 
         const bucketName = 'allmyai-content';
-        
+
         // Upload start and end images if provided
         let startImageUrl = null;
         let endImageUrl = null;
@@ -204,21 +203,23 @@ const videoGeneration = async (req, res) => {
         console.log("Starting video generation with Kling...");
 
         // Generate video with Kling
-        const outputStream = await replicate.run("kwaivgi/kling-v1.6-standard", { input });
+        const outputStream = await replicate.run("wan-video/wan-2.2-t2v-fast", { input });
 
         // Convert stream to buffer
         console.log("Converting video stream to buffer...");
         const videoBuffer = await streamToBuffer(outputStream);
         console.log("Video buffer created, size:", videoBuffer.length, "bytes");
-        
+
         // Upload generated video to Supabase
         const videoFileName = `generated-video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.mp4`;
         console.log("Uploading video to Supabase...");
-        
+
         const videoUrl = await uploadFile(bucketName, videoFileName, videoBuffer, 'video/mp4');
-        
+
         console.log("Video uploaded successfully!");
-        
+
+        console.log("Video URL: ", videoUrl);
+
         const response = {
             type: "success",
             message: "Video generated successfully",
@@ -234,14 +235,15 @@ const videoGeneration = async (req, res) => {
                 endImageUrl: endImageUrl
             }
         };
+        console.log("sending response: ", response);
 
         res.status(200).json(response);
     } catch (error) {
         console.error("Error in video generation:", error);
-        res.status(500).json({ 
-            type: "error", 
-            message: "Failed to generate video", 
-            details: error.message 
+        res.status(500).json({
+            type: "error",
+            message: "Failed to generate video",
+            details: error.message
         });
     }
 };
