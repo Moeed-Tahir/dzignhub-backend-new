@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-
 const login = require('../controller/auth/login')
 const signup = require('../controller/auth/signup')
 const verify = require('../controller/auth/verify')
