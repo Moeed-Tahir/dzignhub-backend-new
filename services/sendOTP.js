@@ -8,6 +8,7 @@ const sendOtp = async (recipientEmail, otp, isResetPassword = false) => {
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
+    
     const { data, error } = await resend.emails.send({
       from: `ALLMYAI <noreply@allmyai.ai>`,
       to: recipientEmail,
